@@ -1,10 +1,11 @@
 const router = require("express").Router();
 const User = require("../models/User.model")
+const { isLoggedIn } = require("../middlewares/auth.middlewares")
 
 
 // GET ("/profile") => el usuario puede ver su perfil
-router.get("/", (req, res, next) =>{
-    
+router.get("/", isLoggedIn, (req, res, next) =>{
+
     User.findById(req.session.activeUser._id)
     .then((response) =>{
         res.render("profile/my-profile.hbs", {
@@ -15,6 +16,11 @@ router.get("/", (req, res, next) =>{
         next(error)
     })
 })
+
+
+
+
+
 
 
 module.exports = router;

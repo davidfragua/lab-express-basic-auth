@@ -24,6 +24,19 @@ const capitalized = string => string[0].toUpperCase() + string.slice(1).toLowerC
 
 app.locals.title = `${capitalized(projectName)}- Generated with Ironlauncher`;
 
+// middleware de variables locales para cada ruta
+app.use((req,res,next) =>{
+    if(req.session.activeUser === undefined) {
+        // usuario no está activo
+        res.locals.isUserActive = false
+    } else {
+        // usuario sí está activo
+        res.locals.isUserActive = true
+    }
+    next()
+})
+
+
 // 👇 Start handling routes here
 const index = require('./routes/index');
 app.use('/', index);
