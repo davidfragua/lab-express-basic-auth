@@ -56,13 +56,68 @@ router.post("/signup", async (req, res, next) =>{
 
         } catch (error) {
             next(error)
-            
+            }
+})
+
+
+    // GET "auth/login" => renderiza la vista del form de login
+    router.get("/login", (req, res, next) =>{
+        res.render("auth/login.hbs")
+    })
+
+
+    // POST "auth/login" => recibe las credenciales el usuario y lo valida
+    router.post("/login", async (req, res, next) =>{
+
+        const { username, password } = req.body
+
+        // validaciones backend
+        if(username === "" || password === "") {
+            res.render("auth/login.hbs", {
+            errorMessage: "Debes completar todos los campos"
+            })
+            return;
         }
 
+        try {
+            // verificar que el usuario existe
+        const foundUser = await User.findOne( { username: username })
+            if(foundUser === null) {
+                res.render("auth/login.hbs", {
+                    errorMessage: "Credenciales incorrectas"
+                })
+                return;
+            }
+
+            // verificar la contrseña del usuario coincide con la suya
+            const isPasswordValid = await bcrypt.compare(password, foundUser.password)
+            if(isPasswordValid === false) {
+                // no coincide
+                res.render("auth/login.hbs", {
+                    errorMessage: "Credenciales incorrectas"
+                })
+                return;
+            }
 
 
+            // crear la sesión/cookie para usuarios activos
+            req.session.activeUser = foundUser;
 
-})
+            // asegurar que se ha creado la sesión y redirigir
+            req.session.save(() => {
+                res.redirect("/profile")
+            })
+        } catch (error) {
+            next(error)
+        }
+    })
+
+    //GET "/auth/logout" => cerrar la sesión 
+        router.get("/logout", (req, res, next) => {
+        req.session.destroy(() => {
+        res.redirect("/")
+        })
+    })
 
 
 
